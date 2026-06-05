@@ -186,7 +186,7 @@ The included `logctool_colorcube.exr` can be used as a reference input for valid
 
 Procedural RGB color cube warp using tetrahedral interpolation.
 
-- https://github.com/mikaelsundell/dctl/blob/master/PD-Colorcube.dctl
+- https://github.com/mikaelsundell/dctl/blob/master/PD-Colorwarp.dctl
 
 #### PD-GamutCompress
 
