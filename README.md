@@ -18,15 +18,19 @@
       - [PD-LogC-Print](#pd-logc-print)
       - [PD-LogC3-FilmMatrix](#pd-logc3-filmmatrix)
     - [Utility DCTLs](#utility-dctls)
+      - [PD-Colorcube](#pd-colorcube)
+      - [PD-Colorwarp](#pd-colorwarp)
+      - [PD-GamutCompress](#pd-gamutcompress)
       - [PD-Grade](#pd-grade)
       - [PD-Matrix](#pd-matrix)
-      - [PD-Stripify](#pd-stripify)
       - [PD-Saturation](#pd-saturation)
+      - [PD-Stripify](#pd-stripify)
       - [PD-Tonecurve](#pd-tonecurve)
       - [PD-Transform](#pd-transform)
         - [Supported color spaces](#supported-color-spaces)
         - [Supported gamma encodings](#supported-gamma-encodings)
         - [Additional features](#additional-features)
+      - [PD-VideoRange](#pd-videorange)
   - [Reference charts](#reference-charts)
       - [ACES Macbeth 50D 5203 EXR from rawtoaces](#aces-macbeth-50d-5203-exr-from-rawtoaces)
       - [LogC3 stepchart - EXR 2K LogC3 encoding](#logc3-stepchart---exr-2k-logc3-encoding)
@@ -161,6 +165,24 @@ The film style matrix makes the color characteristics of the Log C image similar
 
 ### Utility DCTLs
 
+#### PD-Colorcube
+
+Visualize selected RGB color space as CIE XYZ or packed CIE Lab volume.
+
+- https://github.com/mikaelsundell/dctl/blob/master/PD-Colorcube.dctl
+
+#### PD-Colorwarp
+
+Procedural RGB color cube warp using tetrahedral interpolation.
+
+- https://github.com/mikaelsundell/dctl/blob/master/PD-Colorcube.dctl
+
+#### PD-GamutCompress
+
+// Luma-axis gamut compression with selectable color space coefficients.
+
+- https://github.com/mikaelsundell/dctl/blob/master/PD-GamutCompress.dctl
+
 #### PD-Grade
 
 Grade adjustments, this DCTL is experimental code for lift, gamma, gain and log controls.
@@ -173,17 +195,17 @@ Matrix adjustments, a utility for copying matrix values.
 
 - https://github.com/mikaelsundell/dctl/blob/master/PD-Stripify.dctl
 
+#### PD-Saturation
+
+// Luma-axis saturation test with selectable color space coefficients.
+
+- https://github.com/mikaelsundell/dctl/blob/master/PD-Saturation.dctl
+
 #### PD-Stripify
 
 Matrix adjustments, this DCTL simplifies the color palette by pushing colors into a warm and cool strip.
 
 - https://github.com/mikaelsundell/dctl/blob/master/PD-Stripify.dctl
-
-#### PD-Saturation
-
-HSV-based adjustments, this DCTL provides a tool for fine-tuning saturation using saturation in HSV.
-
-- https://github.com/mikaelsundell/dctl/blob/master/PD-Saturation.dctl
 
 #### PD-Tonecurve
 
@@ -237,8 +259,13 @@ Color space transformations to and from CIE XYZ linear, tone compress, ootf and 
 | **Tone OOTF Mapping**      | DCI-P3 → Rec709, sRGB → Rec709, Rec709 → DCI-P3 |
 | **Exposure Index (EI)**    | For LogC3: EI 160 – EI 1600        |
 
-
 - https://github.com/mikaelsundell/dctl/blob/master/PD-Transform.dctl
+
+#### PD-VideoRange
+
+Convert between legal/video range and full/data range.
+
+- https://github.com/mikaelsundell/dctl/blob/master/PD-VideoRange.dctl
 
 ## Reference charts
 

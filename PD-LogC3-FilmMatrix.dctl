@@ -7,6 +7,7 @@ DEFINE_UI_PARAMS(ei, LogC3 EI, DCTLUI_COMBO_BOX, 7, {EI160, EI200, EI250, EI320,
 DEFINE_UI_PARAMS(convertlinear, Convert to linear, DCTLUI_CHECK_BOX, 1)
 DEFINE_UI_PARAMS(reverse, Reverse, DCTLUI_CHECK_BOX, 0)
 
+// clang-format on
 #include "PD-Common.h"
 #include "PD-LogC.h"
 

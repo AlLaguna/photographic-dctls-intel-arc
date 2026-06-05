@@ -2,7 +2,12 @@
 // SPDX-License-Identifier: BSD-3-Clause
 // https://github.com/mikaelsundell/photographic-dctls
 
-// clang-format on
+// Cineon negative inversion with precise control over the dmin ratio based inversion process using adjustable 
+// parameters such as density, bit depth, offset, and density scale. You can specify dmin base values manually
+// as floating-point numbers (obtained from tools like Pixel Analyzer in Nuke or similar software) or sample
+// them using a rectangular sampler from the border or other dmin base areas.
+
+// clang-format off
 DEFINE_UI_PARAMS(density, Density, DCTLUI_SLIDER_FLOAT, 2.046, 0, 4.092, 1);
 DEFINE_UI_PARAMS(bitdepth, Bitdepth, DCTLUI_SLIDER_FLOAT, 1023, 0, 2048, 1);
 DEFINE_UI_PARAMS(offset, Offset, DCTLUI_SLIDER_FLOAT, 95, 0, 190, 1);

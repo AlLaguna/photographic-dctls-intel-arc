@@ -2,6 +2,9 @@
 // SPDX-License-Identifier: BSD-3-Clause
 // https://github.com/mikaelsundell/photographic-dctls
 
+// Tone curve adjustments for contrast, shoulder and toe controls.
+
+// clang-format off
 DEFINE_UI_PARAMS(low, Low, DCTLUI_SLIDER_FLOAT, 0.0, 0.0, 1.0, 0.01);
 DEFINE_UI_PARAMS(low_r, Low R, DCTLUI_SLIDER_FLOAT, 0.0, -1.0, 1.0, 0.01);
 DEFINE_UI_PARAMS(low_g, Low G, DCTLUI_SLIDER_FLOAT, 0.0, -1.0, 1.0, 0.01);
@@ -14,6 +17,7 @@ DEFINE_UI_PARAMS(contrast, Contrast, DCTLUI_SLIDER_FLOAT, 1.0, 0.0, 2.0, 0.01);
 DEFINE_UI_PARAMS(pivot, Pivot, DCTLUI_SLIDER_FLOAT, 0.435, 0.0, 1.0, 0.01);
 DEFINE_UI_PARAMS(showcurve, Show curve, DCTLUI_CHECK_BOX, 0)
 
+// clang-format on
 #include "PD-Common.h"
 #include "PD-DCIP3.h"
 #include "PD-Rec709.h"

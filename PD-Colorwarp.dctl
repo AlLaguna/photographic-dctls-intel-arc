@@ -1,6 +1,7 @@
 // Copyright 2022-present Contributors to the photographic-dctl project.
 // SPDX-License-Identifier: BSD-3-Clause
-// PD-ColorWarp
+// https://github.com/mikaelsundell/photographic-dctls
+
 // Procedural RGB color cube warp using tetrahedral interpolation.
 
 // clang-format off

@@ -2,7 +2,9 @@
 // SPDX-License-Identifier: BSD-3-Clause
 // https://github.com/mikaelsundell/photographic-dctls
 
-// clang-format on
+// Color space transformations to and from CIE XYZ linear, tone compress, ootf and white point adaptation.
+
+// clang-format off
 DEFINE_UI_PARAMS(convert, Convert, DCTLUI_COMBO_BOX, 0, {CVTNONE, CVTYCBCRREC709, CVTREC709YCBCR}, {None, YCbCr to Rec709/Gamma2.4, Rec709/Gamma2.4 to YCbCr});
 DEFINE_UI_PARAMS(inputcolorspace, Input colorspace, DCTLUI_COMBO_BOX, 0, {INXYZ, INACESAP0, INACESAP1, INAWGC3, INAWGC4, INDWG, INREC709, INSRGB, INDCIP3D60, INDCIP3, INDCIP3D65, INGEN5}, {CIE XYZ, AcesAP0 D60, AcesAP1 D60, ARRI AWG3 D65, ARRI AWG4 D65, DaVinci Wide Gamut D65, Rec709 D65, sRGB D65, DCI-P3 'D60 sim' D60, DCI-P3 Theatrical D63, DCI-P3 D65, Blackmagic Gen5 D65})
 DEFINE_UI_PARAMS(inputgamma, Input gamma, DCTLUI_COMBO_BOX, 0, {INLIN, INACESCC, INACESCCT, INLOGC3, INLOGC4, INCINEON, INDWGINTERMEDIATE, INSRGBGAMMA22, INGAMMA24, INGAMMA26, INFILM5}, {Linear, AcesCC, AcesCCT, ARRI LogC3, ARRI LogC4, Cineon, DaVinci Intermediate, sRGB/Gamma2.2, Rec709/Gamma2.4, DCI-P3/Gamma2.6, Blackmagic Film})
@@ -16,6 +18,7 @@ DEFINE_UI_PARAMS(mapcolorspace, Map colorspace, DCTLUI_CHECK_BOX, 1)
 DEFINE_UI_PARAMS(mapgamma, Map gamma, DCTLUI_CHECK_BOX, 1)
 DEFINE_UI_PARAMS(adjustdisplay, Adjust for display, DCTLUI_CHECK_BOX, 0)
 
+// clang-format on
 #include "PD-Common.h"
 #include "PD-Aces.h"
 #include "PD-Cineon.h"

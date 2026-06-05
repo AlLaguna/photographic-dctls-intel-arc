@@ -1,11 +1,12 @@
 // Copyright 2022-present Contributors to the photographic-dctl project.
 // SPDX-License-Identifier: BSD-3-Clause
-// PD-ColorVolume
+// https://github.com/mikaelsundell/photographic-dctls
+
 // Visualize selected RGB color space as CIE XYZ or packed CIE Lab volume.
 
 // clang-format off
-DEFINE_UI_PARAMS(inputcolorspace, Input colorspace, DCTLUI_COMBO_BOX, 6, {INXYZ, INACESAP0, INACESAP1, INAWGC3, INAWGC4, INDWG, INREC709, INSRGB, INDCIP3D60, INDCIP3, INDCIP3D65, INGEN5}, {CIE XYZ, AcesAP0 D60, AcesAP1 D60, ARRI AWG3 D65, ARRI AWG4 D65, DaVinci Wide Gamut D65, Rec709 D65, sRGB D65, DCI-P3 'D60 sim' D60, DCI-P3 Theatrical D63, DCI-P3 D65, Blackmagic Gen5 D65})
-DEFINE_UI_PARAMS(inputgamma, Input gamma, DCTLUI_COMBO_BOX, 0, {INLIN, INACESCC, INACESCCT, INLOGC3, INLOGC4, INCINEON, INDWGINTERMEDIATE, INSRGBGAMMA22, INGAMMA24, INGAMMA26, INFILM5}, {Linear, AcesCC, AcesCCT, ARRI LogC3, ARRI LogC4, Cineon, DaVinci Intermediate, sRGB/Gamma2.2, Rec709/Gamma2.4, DCI-P3/Gamma2.6, Blackmagic Film})
+DEFINE_UI_PARAMS(colorspace, Colorspace, DCTLUI_COMBO_BOX, 6, {XYZ, ACESAP0, ACESAP1, AWGC3, AWGC4, DWG, REC709, SRGB, DCIP3D60, DCIP3, DCIP3D65, GEN5}, {CIE XYZ, AcesAP0 D60, AcesAP1 D60, ARRI AWG3 D65, ARRI AWG4 D65, DaVinci Wide Gamut D65, Rec709 D65, sRGB D65, DCI-P3 'D60 sim' D60, DCI-P3 Theatrical D63, DCI-P3 D65, Blackmagic Gen5 D65})
+DEFINE_UI_PARAMS(gamma, Gamma, DCTLUI_COMBO_BOX, 0, {LIN, ACESCC, ACESCCT, LOGC3, LOGC4, CINEON, DWGINTERMEDIATE, SRGBGAMMA22, GAMMA24, GAMMA26, FILM5}, {Linear, AcesCC, AcesCCT, ARRI LogC3, ARRI LogC4, Cineon, DaVinci Intermediate, sRGB/Gamma2.2, Rec709/Gamma2.4, DCI-P3/Gamma2.6, Blackmagic Film})
 DEFINE_UI_PARAMS(whitepoint, Whitepoint adaptation, DCTLUI_COMBO_BOX, 0, {WPNONE, WPD60D65, WPD63D65, WPD65D60, WPD65D63}, {None, D60 to D65, D63 to D65, D65 to D60, D65 to D63})
 DEFINE_UI_PARAMS(ei, LogC3 EI, DCTLUI_COMBO_BOX, 7, {EI160, EI200, EI250, EI320, EI400, EI500, EI640, EI800, EI1000, EI1280, EI1600}, {EI 160, EI 200, EI 250, EI 320, EI 400, EI 500, EI 640, EI 800, EI 1000, EI 1280, EI 1600})
 DEFINE_UI_PARAMS(labtransform, Lab transform, DCTLUI_CHECK_BOX, 1)
@@ -25,8 +26,8 @@ DEFINE_UI_PARAMS(adjustdisplay, Adjust for display, DCTLUI_CHECK_BOX, 0)
 
 struct ColorVolumeParams
 {
-    int inputcolorspace;
-    int inputgamma;
+    int colorspace;
+    int gamma;
     int whitepoint;
     int ei;
 };
@@ -35,7 +36,6 @@ __DEVICE__ float lab_f(float t)
 {
     const float epsilon = 216.0f / 24389.0f;
     const float kappa = 24389.0f / 27.0f;
-
     return t > epsilon ? pow_f(t, 1.0f / 3.0f) : (kappa * t + 16.0f) / 116.0f;
 }
 
@@ -66,34 +66,34 @@ __DEVICE__ float3 pack_lab_to_rgb(float3 lab)
 __DEVICE__ float3 input_gamma_to_linear(float3 rgb, struct ColorVolumeParams params)
 {
     switch (params.inputgamma) {
-        case INACESCC:
+        case ACESCC:
             rgb = acescc_lin(rgb);
             break;
-        case INACESCCT:
+        case ACESCCT:
             rgb = acescct_lin(rgb);
             break;
-        case INLOGC3:
+        case LOGC3:
             rgb = logC3_lin(rgb, params.ei);
             break;
-        case INLOGC4:
+        case LOGC4:
             rgb = logC4_lin(rgb);
             break;
-        case INCINEON:
+        case CINEON:
             rgb = cineon_lin(rgb);
             break;
-        case INDWGINTERMEDIATE:
+        case DWGINTERMEDIATE:
             rgb = dwgintermediate_lin(rgb);
             break;
-        case INSRGBGAMMA22:
+        case SRGBGAMMA22:
             rgb = sRGBgamma22_lin(rgb);
             break;
-        case INGAMMA24:
+        case GAMMA24:
             rgb = rec709gamma24_lin(rgb);
             break;
-        case INGAMMA26:
+        case GAMMA26:
             rgb = dcip3gamma26_lin(rgb);
             break;
-        case INFILM5:
+        case FILM5:
             rgb = gen5_lin(rgb);
             break;
     }
@@ -104,37 +104,37 @@ __DEVICE__ float3 input_gamma_to_linear(float3 rgb, struct ColorVolumeParams par
 __DEVICE__ float3 input_colorspace_to_xyz(float3 rgb, struct ColorVolumeParams params)
 {
     switch (params.inputcolorspace) {
-        case INACESAP0:
+        case ACESAP0:
             rgb = acesAP0_xyz(rgb);
             break;
-        case INACESAP1:
+        case ACESAP1:
             rgb = acesAP1_xyz(rgb);
             break;
-        case INAWGC3:
+        case AWGC3:
             rgb = logC3_xyz(rgb);
             break;
-        case INAWGC4:
+        case AWGC4:
             rgb = logC4_xyz(rgb);
             break;
-        case INDWG:
+        case DWG:
             rgb = dwg_xyz(rgb);
             break;
-        case INREC709:
+        case REC709:
             rgb = rec709_xyz(rgb);
             break;
-        case INSRGB:
+        case SRGB:
             rgb = sRGB_xyz(rgb);
             break;
-        case INDCIP3D60:
+        case DCIP3D60:
             rgb = dcip3d60_xyz(rgb);
             break;
-        case INDCIP3:
+        case DCIP3:
             rgb = dcip3_xyz(rgb);
             break;
-        case INDCIP3D65:
+        case DCIP3D65:
             rgb = dcip3d65_xyz(rgb);
             break;
-        case INGEN5:
+        case GEN5:
             rgb = gen5_xyz(rgb);
             break;
     }
@@ -165,20 +165,17 @@ __DEVICE__ float3 adapt_whitepoint(float3 xyz, struct ColorVolumeParams params)
 __DEVICE__ float3 transform(int p_Width, int p_Height, int p_X, int p_Y, float p_R, float p_G, float p_B)
 {
     float3 rgb = make_float3(p_R, p_G, p_B);
-
     struct ColorVolumeParams params;
-    params.inputcolorspace = inputcolorspace;
-    params.inputgamma = inputgamma;
+    params.colorspace = colorspace;
+    params.gamma = gamma;
     params.whitepoint = whitepoint;
     params.ei = ei;
 
-    rgb = input_gamma_to_linear(rgb, params);
-
-    float3 xyz = input_colorspace_to_xyz(rgb, params);
+    rgb = gamma_to_lin(rgb, params);
+    float3 xyz = colorspace_to_xyz(rgb, params);
     xyz = adapt_whitepoint(xyz, params);
 
     float3 result = xyz;
-
     if (labtransform) {
         float3 lab = xyz_lab_d65(xyz);
         result = pack_lab_to_rgb(lab);

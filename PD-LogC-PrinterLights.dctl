@@ -15,6 +15,7 @@ DEFINE_UI_PARAMS(btrim, B trim, DCTLUI_SLIDER_FLOAT, 25, 0, 50, 0.1) // +B adds 
 DEFINE_UI_PARAMS(mapprinterlights, Use printer points, DCTLUI_CHECK_BOX, 1)
 DEFINE_UI_PARAMS(maptrims, Use trims, DCTLUI_CHECK_BOX, 1)
 
+// clang-format on
 #include "PD-Common.h"
 #include "PD-LogC.h"
 

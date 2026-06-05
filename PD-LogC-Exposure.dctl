@@ -11,6 +11,7 @@ DEFINE_UI_PARAMS(adjustdisplay, Adjust for display, DCTLUI_CHECK_BOX, 0)
 DEFINE_UI_PARAMS(showcolors, Show colors, DCTLUI_CHECK_BOX, 0)
 DEFINE_UI_PARAMS(showlegend, Show legend, DCTLUI_CHECK_BOX, 0)
 
+// clang-format on
 #include "PD-Common.h"
 #include "PD-LogC.h"
 

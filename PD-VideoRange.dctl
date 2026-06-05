@@ -1,6 +1,7 @@
 // Copyright 2022-present Contributors to the photographic-dctl project.
 // SPDX-License-Identifier: BSD-3-Clause
-// PD-Range
+// https://github.com/mikaelsundell/photographic-dctls
+
 // Convert between legal/video range and full/data range.
 
 // clang-format off
