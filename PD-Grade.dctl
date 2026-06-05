@@ -66,16 +66,16 @@ __DEVICE__ float3 grade(float3 rgb, struct Grade gr) {
 
 // transform
 __DEVICE__ float3 transform(int p_Width, int p_Height, int p_X, int p_Y, float p_R, float p_G, float p_B) {
-    struct Grade gr;
-    gr.whitepoint = make_float3(whitepoint_r, whitepoint_g, whitepoint_b);
-    gr.blackpoint = make_float3(blackpoint_r, blackpoint_g, blackpoint_b);
-    gr.lift = make_float3(lift_r, lift_g, lift_b);
-    gr.gain = make_float3(gain_r, gain_g, gain_b);
-    gr.multiply = make_float3(multiply_r, multiply_g, multiply_b);
-    gr.offset = make_float3(offset_r, offset_g, offset_b);
-    gr.gamma_scale = make_float2(-5.0, -0.8);
-    gr.gamma = apply_scale(make_float3(gamma_r, gamma_g, gamma_b), gr.gamma_scale);
-    float3 rgb = grade(make_float3(p_R, p_G, p_B), gr);
+    struct Grade params;
+    params.whitepoint = make_float3(whitepoint_r, whitepoint_g, whitepoint_b);
+    params.blackpoint = make_float3(blackpoint_r, blackpoint_g, blackpoint_b);
+    params.lift = make_float3(lift_r, lift_g, lift_b);
+    params.gain = make_float3(gain_r, gain_g, gain_b);
+    params.multiply = make_float3(multiply_r, multiply_g, multiply_b);
+    params.offset = make_float3(offset_r, offset_g, offset_b);
+    params.gamma_scale = make_float2(-5.0, -0.8);
+    params.gamma = apply_scale(make_float3(gamma_r, gamma_g, gamma_b), params.gamma_scale);
+    float3 rgb = grade(make_float3(p_R, p_G, p_B), params);
     if (adjustdisplay) {
         rgb = adjust_display(rgb);
     }

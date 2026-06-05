@@ -15,6 +15,14 @@ DEFINE_UI_PARAMS(showlegend, Show legend, DCTLUI_CHECK_BOX, 0)
 #include "PD-Common.h"
 #include "PD-LogC.h"
 
+struct LogCExposureParams
+{
+    int logc;
+    int ei;
+    float exposure;
+    int ev;
+};
+
 __DEVICE__ float evstops(int ev) {
     if (ev == EV_3) {
         return -3.0f;
@@ -34,11 +42,11 @@ __DEVICE__ float evstops(int ev) {
     return 0.0;
 }
 
-__DEVICE__ float3 logC_ev_color(float3 input_rgb, int ei, int ev, int logc) {
+__DEVICE__ float3 logC_ev_color(float3 input_rgb, struct LogCExposureParams params) {
     struct LogCColor colors[logC_stops];
-    if (logc == LOGC3) {
-        struct LogC3Curve cv = logC3_curve(ei);
-        float evs = evstops(ev);
+    if (params.logc == LOGC3) {
+        struct LogC3Curve cv = logC3_curve(params.ei);
+        float evs = evstops(params.ev);
         for (unsigned long i = 0; i < logC_stops; i++) {
             colors[i] = logC_colors[i];
             float lin = pow_f(2.0f, colors[i].stop + evs + 0.5f) * 0.18f;
@@ -48,7 +56,7 @@ __DEVICE__ float3 logC_ev_color(float3 input_rgb, int ei, int ev, int logc) {
     }
     else {
         struct LogC4Curve cv = logC4_curve();
-        float evs = evstops(ev);
+        float evs = evstops(params.ev);
         for (unsigned long i = 0; i < logC_stops; i++) {
             colors[i] = logC_colors[i];
             float lin = pow_f(2.0f, colors[i].stop + evs + 0.5f) * 0.18f;
@@ -70,14 +78,21 @@ __DEVICE__ float3 logC_ev_color(float3 input_rgb, int ei, int ev, int logc) {
 __DEVICE__ float3 transform(int p_Width, int p_Height, int p_X, int p_Y, float p_R, float p_G, float p_B)
 {
     float3 rgb = make_float3(p_R, p_G, p_B);
-    if (logc == LOGC3) {
-        rgb = lin_logC3(logC3_lin(rgb, ei) * pow_f(2.0, exposure), ei);
+
+    struct LogCExposureParams params;
+    params.logc = logc;
+    params.ei = ei;
+    params.exposure = exposure;
+    params.ev = ev;
+
+    if (params.logc == LOGC3) {
+        rgb = lin_logC3(logC3_lin(rgb, params.ei) * pow_f(2.0, params.exposure), params.ei);
     }
     else {
-        rgb = lin_logC4(logC4_lin(rgb) * pow_f(2.0, exposure));
+        rgb = lin_logC4(logC4_lin(rgb) * pow_f(2.0, params.exposure));
     }
     if (showcolors > 0) {
-        rgb = logC_ev_color(rgb, ei, ev, logc);
+        rgb = logC_ev_color(rgb, params);
     }
     if (showlegend > 0) {
         int legendwidth = p_Width * 0.8;

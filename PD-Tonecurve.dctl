@@ -24,6 +24,21 @@ DEFINE_UI_PARAMS(showcurve, Show curve, DCTLUI_CHECK_BOX, 0)
 #include "PD-sRGB.h"
 #include "PD-Tonemap.h"
 
+struct ToneCurveParams
+{
+    float low;
+    float low_r;
+    float low_g;
+    float low_b;
+    float high;
+    float high_r;
+    float high_g;
+    float high_b;
+    float contrast;
+    float pivot;
+    int showcurve;
+};
+
 __DEVICE__ float tonecurve(struct TonemapCurve tc, float x, float low, float lowoffset, float lowsoft, float high, float highoffset, float highsoft, float contrast, float pivot)
 {
     low = clamp_f(low - lowoffset, 0.0, 1.0);
@@ -52,39 +67,52 @@ __DEVICE__ float tonecurve(struct TonemapCurve tc, float x, float low, float low
 
 __DEVICE__ float3 transform(int p_Width, int p_Height, int p_X, int p_Y, float p_R, float p_G, float p_B)
 {
+    struct ToneCurveParams params;
+    params.low = low;
+    params.low_r = low_r;
+    params.low_g = low_g;
+    params.low_b = low_b;
+    params.high = high;
+    params.high_r = high_r;
+    params.high_g = high_g;
+    params.high_b = high_b;
+    params.contrast = contrast;
+    params.pivot = pivot;
+    params.showcurve = showcurve;
+
     struct TonemapCurve tc = tonemap_curve();
     float3 rgb = make_float3(p_R, p_G, p_B);
     float lowsoft = 1.0;
     float highsoft = 1.0;
-    rgb.x = tonecurve(tc, rgb.x, low, low_r, lowsoft, high, high_r, highsoft, contrast, pivot);
-    rgb.y = tonecurve(tc, rgb.y, low, low_g, lowsoft, high, high_g, highsoft, contrast, pivot);
-    rgb.z = tonecurve(tc, rgb.z, low, low_b, lowsoft, high, high_b, highsoft, contrast, pivot);
-    if (showcurve > 0) {
+    rgb.x = tonecurve(tc, rgb.x, params.low, params.low_r, lowsoft, params.high, params.high_r, highsoft, params.contrast, params.pivot);
+    rgb.y = tonecurve(tc, rgb.y, params.low, params.low_g, lowsoft, params.high, params.high_g, highsoft, params.contrast, params.pivot);
+    rgb.z = tonecurve(tc, rgb.z, params.low, params.low_b, lowsoft, params.high, params.high_b, highsoft, params.contrast, params.pivot);
+    if (params.showcurve > 0) {
         float x = float(p_X) / float(p_Width);
         int thickness = 4;
         float3 color = make_float3(0.0, 0.0, 0.0);
-        float r = tonecurve(tc, x, low, low_r, lowsoft, high, high_r, highsoft, contrast, pivot);
+        float r = tonecurve(tc, x, params.low, params.low_r, lowsoft, params.high, params.high_r, highsoft, params.contrast, params.pivot);
         int row = (1.0f - r) * p_Height;
         if (p_Y >= row - thickness / 2 && p_Y <= row + thickness / 2) {
             color = make_float3(1.0, 0.0, 0.0);
         }
-        float g = tonecurve(tc, x, low, low_g, lowsoft, high, high_g, highsoft, contrast, pivot);
+        float g = tonecurve(tc, x, params.low, params.low_g, lowsoft, params.high, params.high_g, highsoft, params.contrast, params.pivot);
         row = (1.0f - g) * p_Height;
         if (p_Y >= row - thickness / 2 && p_Y <= row + thickness / 2) {
             color = make_float3(0.0, 1.0, 0.0);
         }
-        float b = tonecurve(tc, x, low, low_b, lowsoft, high, high_b, highsoft, contrast, pivot);
+        float b = tonecurve(tc, x, params.low, params.low_b, lowsoft, params.high, params.high_b, highsoft, params.contrast, params.pivot);
         row = (1.0f - b) * p_Height;
         if (p_Y >= row - thickness / 2 && p_Y <= row + thickness / 2) {
             color = make_float3(0.0, 0.0, 1.0);
         }
-        float l = tonecurve(tc, x, low, 0.0, lowsoft, high, 0.0, highsoft, contrast, pivot);
+        float l = tonecurve(tc, x, params.low, 0.0, lowsoft, params.high, 0.0, highsoft, params.contrast, params.pivot);
         row = (1.0f - l) * p_Height;
         thickness = 6;
         if (p_Y >= row - thickness / 2 && p_Y <= row + thickness / 2) {
             color = make_float3(1.0, 1.0, 1.0);
         }
-        if (color.x > 0.0 || color.y > 0.0 || color.z > 0.0) {
+        if (color.x > 0.0 || color.y > 0.0 || color.z > 0.0) {
             return color;
         }
         else {

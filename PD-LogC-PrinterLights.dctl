@@ -19,6 +19,21 @@ DEFINE_UI_PARAMS(maptrims, Use trims, DCTLUI_CHECK_BOX, 1)
 #include "PD-Common.h"
 #include "PD-LogC.h"
 
+struct PrinterPointsParams
+{
+    int logc;
+    int ei;
+    float cpoints;
+    float mpoints;
+    float ypoints;
+    float wpoints;
+    float rtrim;
+    float gtrim;
+    float btrim;
+    int mapprinterlights;
+    int maptrims;
+};
+
 __DEVICE__ inline float pointsgain(float points_delta)
 {
     // 12 points = 1 stop
@@ -26,13 +41,13 @@ __DEVICE__ inline float pointsgain(float points_delta)
     return exp2_f(points_delta / points_per_stop);
 }
 
-__DEVICE__ float3 printerpoints(float3 lin_rgb, float c, float m, float y, float w)
+__DEVICE__ float3 printerpoints(float3 lin_rgb, struct PrinterPointsParams params)
 {
     // neutral is 25
-    float dc = c - 25.0f;
-    float dm = m - 25.0f;
-    float dy = y - 25.0f;
-    float dw = w - 25.0f;
+    float dc = params.cpoints - 25.0f;
+    float dm = params.mpoints - 25.0f;
+    float dy = params.ypoints - 25.0f;
+    float dw = params.wpoints - 25.0f;
     // white/master gain first (negative delta = cut)
     // For CMY: Cyan cuts Red, Magenta cuts Green, Yellow cuts Blue
     // So channel gains are master * cuts from complementary dyes
@@ -49,11 +64,11 @@ __DEVICE__ float3 printerpoints(float3 lin_rgb, float c, float m, float y, float
     return out;
 }
 
-__DEVICE__ float3 rgbtrims(float3 linrgb, float r, float g, float b)
+__DEVICE__ float3 rgbtrims(float3 linrgb, struct PrinterPointsParams params)
 {
-    float dr = r - 25.0f;
-    float dg = g - 25.0f;
-    float db = b - 25.0f;
+    float dr = params.rtrim - 25.0f;
+    float dg = params.gtrim - 25.0f;
+    float db = params.btrim - 25.0f;
     float gr = pointsgain(dr);
     float gg = pointsgain(dg);
     float gb = pointsgain(db);
@@ -68,22 +83,36 @@ __DEVICE__ float3 rgbtrims(float3 linrgb, float r, float g, float b)
 __DEVICE__ float3 transform(int p_Width, int p_Height, int p_X, int p_Y, float p_R, float p_G, float p_B)
 {
     float3 rgb = make_float3(p_R, p_G, p_B);
-    if (logc == LOGC3) {
-        rgb = logC3_lin(rgb, ei);
+
+    struct PrinterPointsParams params;
+    params.logc = logc;
+    params.ei = ei;
+    params.cpoints = cpoints;
+    params.mpoints = mpoints;
+    params.ypoints = ypoints;
+    params.wpoints = wpoints;
+    params.rtrim = rtrim;
+    params.gtrim = gtrim;
+    params.btrim = btrim;
+    params.mapprinterlights = mapprinterlights;
+    params.maptrims = maptrims;
+
+    if (params.logc == LOGC3) {
+        rgb = logC3_lin(rgb, params.ei);
     } else {
         rgb = logC4_lin(rgb);
     }
 
-    if (mapprinterlights) {
-        rgb = printerpoints(rgb, cpoints, mpoints, ypoints, wpoints);
+    if (params.mapprinterlights) {
+        rgb = printerpoints(rgb, params);
     }
 
-    if (maptrims) {
-        rgb = rgbtrims(rgb, rtrim, gtrim, btrim);
+    if (params.maptrims) {
+        rgb = rgbtrims(rgb, params);
     }
 
-    if (logc == LOGC3) {
-        rgb = lin_logC3(rgb, ei);
+    if (params.logc == LOGC3) {
+        rgb = lin_logC3(rgb, params.ei);
     } else {
         rgb = lin_logC4(rgb);
     }

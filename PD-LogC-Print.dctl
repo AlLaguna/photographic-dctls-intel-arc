@@ -35,6 +35,20 @@ DEFINE_LUT(LUT5_DCIP3, ../Film Looks/DCI-P3 Kodak 2383 D65.cube)
 #include "PD-Rec709.h"
 #include "PD-DCIP3.h"
 
+struct PrintParams
+{
+    int logc;
+    int ei;
+    int lumlut;
+    int colorlut;
+    int display;
+    float lumblend;
+    float colorblend;
+    int convertcineon;
+    int convertcolorspace;
+    int showcurve;
+};
+
 __DEVICE__ float3 print(float3 rgb, float3 lumrgb, float3 colorrgb, float lumblend, float colorblend)
 {
     float lumlut = luma_rec601(lumrgb);
@@ -46,27 +60,40 @@ __DEVICE__ float3 print(float3 rgb, float3 lumrgb, float3 colorrgb, float lumble
 __DEVICE__ float3 transform(int p_Width, int p_Height, int p_X, int p_Y, float p_R, float p_G, float p_B)
 {
     float3 rgb = make_float3(p_R, p_G, p_B);
-    if (convertcolorspace) {
-        if (display == REC709) {
-            if (logc == LOGC3) {
-                rgb = lin_logC3(xyz_rec709(logC3_xyz(logC3_lin(rgb, ei))), ei);
+
+    struct PrintParams params;
+    params.logc = logc;
+    params.ei = ei;
+    params.lumlut = lumlut;
+    params.colorlut = colorlut;
+    params.display = display;
+    params.lumblend = lumblend;
+    params.colorblend = colorblend;
+    params.convertcineon = convertcineon;
+    params.convertcolorspace = convertcolorspace;
+    params.showcurve = showcurve;
+
+    if (params.convertcolorspace) {
+        if (params.display == REC709) {
+            if (params.logc == LOGC3) {
+                rgb = lin_logC3(xyz_rec709(logC3_xyz(logC3_lin(rgb, params.ei))), params.ei);
             }
             else {
                 rgb = lin_logC4(xyz_rec709(logC4_xyz(logC4_lin(rgb))));
             }
         }
         else {
-            if (logc == LOGC3) {
-                rgb = lin_logC3(xyz_dcip3(logC3_xyz(logC3_lin(rgb, ei))), ei);
+            if (params.logc == LOGC3) {
+                rgb = lin_logC3(xyz_dcip3(logC3_xyz(logC3_lin(rgb, params.ei))), params.ei);
             }
             else {
                 rgb = lin_logC4(xyz_dcip3(logC4_xyz(logC4_lin(rgb))));
             }
         }
     }
-    if (convertcineon) {
-        if (logc == LOGC3) {
-            rgb = lin_cineon(logC3_lin(rgb, ei));
+    if (params.convertcineon) {
+        if (params.logc == LOGC3) {
+            rgb = lin_cineon(logC3_lin(rgb, params.ei));
         }
         else {
             rgb = lin_cineon(logC4_lin(rgb));
@@ -75,46 +102,46 @@ __DEVICE__ float3 transform(int p_Width, int p_Height, int p_X, int p_Y, float p
     float x = float(p_X) / float(p_Width);    
     float3 lumrgb;
     float3 lumcurve = make_float3(x, x, x);
-    if (display == REC709) {
-        switch (lumlut) {
+    if (params.display == REC709) {
+        switch (params.lumlut) {
             case LUMLUT0: {
                 lumrgb = APPLY_LUT(rgb.x, rgb.y, rgb.z, LUT0_REC709);
-                if (showcurve) {
+                if (params.showcurve) {
                     lumcurve = APPLY_LUT(lumcurve.x, lumcurve.y, lumcurve.z, LUT0_REC709);
                 }
             }
             break;
             case LUMLUT1: {
                 lumrgb = APPLY_LUT(rgb.x, rgb.y, rgb.z, LUT1_REC709);
-                if (showcurve) {
+                if (params.showcurve) {
                     lumcurve = APPLY_LUT(lumcurve.x, lumcurve.y, lumcurve.z, LUT1_REC709);
                 }
             }
             break;
             case LUMLUT2: {
                 lumrgb = APPLY_LUT(rgb.x, rgb.y, rgb.z, LUT2_REC709);
-                if (showcurve) {
+                if (params.showcurve) {
                     lumcurve = APPLY_LUT(lumcurve.x, lumcurve.y, lumcurve.z, LUT2_REC709);
                 }
             }
             break;
             case LUMLUT3: {
                 lumrgb = APPLY_LUT(rgb.x, rgb.y, rgb.z, LUT3_REC709);
-                if (showcurve) {
+                if (params.showcurve) {
                     lumcurve = APPLY_LUT(lumcurve.x, lumcurve.y, lumcurve.z, LUT3_REC709);
                 }
             }
             break;
             case LUMLUT4: {
                 lumrgb = APPLY_LUT(rgb.x, rgb.y, rgb.z, LUT4_REC709);
-                if (showcurve) {
+                if (params.showcurve) {
                     lumcurve = APPLY_LUT(lumcurve.x, lumcurve.y, lumcurve.z, LUT4_REC709);
                 }
             }
             break;
             case LUMLUT5: {
                 lumrgb = APPLY_LUT(rgb.x, rgb.y, rgb.z, LUT5_REC709);
-                if (showcurve) {
+                if (params.showcurve) {
                     lumcurve = APPLY_LUT(lumcurve.x, lumcurve.y, lumcurve.z, LUT5_REC709);
                 }
             }
@@ -122,7 +149,7 @@ __DEVICE__ float3 transform(int p_Width, int p_Height, int p_X, int p_Y, float p
         }
     }
     else {
-        switch (lumlut) {
+        switch (params.lumlut) {
             case LUMLUT0: lumrgb = APPLY_LUT(rgb.x, rgb.y, rgb.z, LUT0_DCIP3); break;
             case LUMLUT1: lumrgb = APPLY_LUT(rgb.x, rgb.y, rgb.z, LUT1_DCIP3); break;
             case LUMLUT2: lumrgb = APPLY_LUT(rgb.x, rgb.y, rgb.z, LUT2_DCIP3); break;
@@ -133,46 +160,46 @@ __DEVICE__ float3 transform(int p_Width, int p_Height, int p_X, int p_Y, float p
     }
     float3 colorrgb;
     float3 colorcurve = make_float3(x, x, x);
-    if (display == REC709) {
-        switch (colorlut) {
+    if (params.display == REC709) {
+        switch (params.colorlut) {
             case COLORLUT0: {
                 colorrgb = APPLY_LUT(rgb.x, rgb.y, rgb.z, LUT0_REC709);
-                if (showcurve) {
+                if (params.showcurve) {
                     colorcurve = APPLY_LUT(colorcurve.x, colorcurve.y, colorcurve.z, LUT0_REC709);
                 }
             }
             break;
             case COLORLUT1: {
                 colorrgb = APPLY_LUT(rgb.x, rgb.y, rgb.z, LUT1_REC709);
-                if (showcurve) {
+                if (params.showcurve) {
                     colorcurve = APPLY_LUT(colorcurve.x, colorcurve.y, colorcurve.z, LUT1_REC709);
                 }
             }
             break;
             case COLORLUT2: {
                 colorrgb = APPLY_LUT(rgb.x, rgb.y, rgb.z, LUT2_REC709);
-                if (showcurve) {
+                if (params.showcurve) {
                     colorcurve = APPLY_LUT(colorcurve.x, colorcurve.y, colorcurve.z, LUT2_REC709);
                 }
             }
             break;  
             case COLORLUT3: {
                 colorrgb = APPLY_LUT(rgb.x, rgb.y, rgb.z, LUT3_REC709);
-                if (showcurve) {
+                if (params.showcurve) {
                     colorcurve = APPLY_LUT(colorcurve.x, colorcurve.y, colorcurve.z, LUT3_REC709);
                 }
             }
             break; 
             case COLORLUT4: {
                 colorrgb = APPLY_LUT(rgb.x, rgb.y, rgb.z, LUT4_REC709);
-                if (showcurve) {
+                if (params.showcurve) {
                     colorcurve = APPLY_LUT(colorcurve.x, colorcurve.y, colorcurve.z, LUT4_REC709);
                 }
             }
             break; 
             case COLORLUT5: {
                 colorrgb = APPLY_LUT(rgb.x, rgb.y, rgb.z, LUT5_REC709);
-                if (showcurve) {
+                if (params.showcurve) {
                     colorcurve = APPLY_LUT(colorcurve.x, colorcurve.y, colorcurve.z, LUT5_REC709);
                 }
             }
@@ -180,7 +207,7 @@ __DEVICE__ float3 transform(int p_Width, int p_Height, int p_X, int p_Y, float p
         }
     }
     else {
-        switch (colorlut) {
+        switch (params.colorlut) {
             case COLORLUT0: colorrgb = APPLY_LUT(rgb.x, rgb.y, rgb.z, LUT0_DCIP3); break;
             case COLORLUT1: colorrgb = APPLY_LUT(rgb.x, rgb.y, rgb.z, LUT1_DCIP3); break;
             case COLORLUT2: colorrgb = APPLY_LUT(rgb.x, rgb.y, rgb.z, LUT2_DCIP3); break;
@@ -189,12 +216,12 @@ __DEVICE__ float3 transform(int p_Width, int p_Height, int p_X, int p_Y, float p
             case COLORLUT5: colorrgb = APPLY_LUT(rgb.x, rgb.y, rgb.z, LUT5_DCIP3); break;
         }
     }
-    rgb = print(rgb, lumrgb, colorrgb, lumblend, colorblend);
-    if (showcurve > 0) {
+    rgb = print(rgb, lumrgb, colorrgb, params.lumblend, params.colorblend);
+    if (params.showcurve > 0) {
         float3 curvex = make_float3(x, x, x);
         int thickness = 4;
         float3 color = make_float3(0.0, 0.0, 0.0);
-        float3 curvergb = print(curvex, lumcurve, colorcurve, lumblend, colorblend);
+        float3 curvergb = print(curvex, lumcurve, colorcurve, params.lumblend, params.colorblend);
         int row = (1.0f - curvergb.x) * p_Height;
         if (p_Y >= row - thickness / 2 && p_Y <= row + thickness / 2) {
             color = make_float3(1.0, 0.0, 0.0);
@@ -213,7 +240,7 @@ __DEVICE__ float3 transform(int p_Width, int p_Height, int p_X, int p_Y, float p
         if (p_Y >= row - thickness / 2 && p_Y <= row + thickness / 2) {
             color = make_float3(1.0, 1.0, 1.0);
         }
-        if (color.x > 0.0 || color.y > 0.0 || color.z > 0.0) {
+        if (color.x > 0.0 || color.y > 0.0 || color.z > 0.0) {
             return color;
         }
         else {
