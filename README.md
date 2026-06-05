@@ -59,6 +59,13 @@ The repository also serves as a testbench for future production tools. Experimen
 
 | Date       | Description                             |
 |------------|-----------------------------------------|
+| 2025-06-05 | Added logctool_colorcube.exr for validating the color cube DCTL |
+|            | Added PD-Colorcube.dctl |
+|            | Added PD-Colorwarp.dctl |
+|            | Added PD-GamutCompress.dctl |
+|            | Added PD-VideoRange.dctl |
+|            | Improved PD-Saturation now uses luma axis and color spaces |
+|            | Fixed OUTFILM5 in PD-Transform, prevously used colorspace instead of gamma |
 | 2025-08-19 | PD-Tonemap: Improved reinhard, now luma preserving |
 | 2025-08-16 | Fixed typos in comments for color space matrices |
 | 2025-08-05 | PD-Transform: Added support for YCbCr conversion |
