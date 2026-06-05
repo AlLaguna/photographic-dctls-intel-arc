@@ -11,11 +11,9 @@ DEFINE_UI_PARAMS(adjustdisplay, Adjust for display, DCTLUI_CHECK_BOX, 0)
 DEFINE_UI_PARAMS(showcolors, Show colors, DCTLUI_CHECK_BOX, 0)
 DEFINE_UI_PARAMS(showlegend, Show legend, DCTLUI_CHECK_BOX, 0)
 
-// headers
 #include "PD-Common.h"
 #include "PD-LogC.h"
 
-// ev stops
 __DEVICE__ float evstops(int ev) {
     if (ev == EV_3) {
         return -3.0f;
@@ -35,7 +33,6 @@ __DEVICE__ float evstops(int ev) {
     return 0.0;
 }
 
-// logc3 color
 __DEVICE__ float3 logC_ev_color(float3 input_rgb, int ei, int ev, int logc) {
     struct LogCColor colors[logC_stops];
     if (logc == LOGC3) {
@@ -69,7 +66,6 @@ __DEVICE__ float3 logC_ev_color(float3 input_rgb, int ei, int ev, int logc) {
     return result; 
 }
 
-// transform
 __DEVICE__ float3 transform(int p_Width, int p_Height, int p_X, int p_Y, float p_R, float p_G, float p_B)
 {
     float3 rgb = make_float3(p_R, p_G, p_B);

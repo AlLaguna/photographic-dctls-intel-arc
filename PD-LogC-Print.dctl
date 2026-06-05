@@ -5,14 +5,15 @@
 // clang-format on
 DEFINE_UI_PARAMS(logc, LogC, DCTLUI_COMBO_BOX, 0, {LOGC3, LOGC4}, {LogC3, LogC4})
 DEFINE_UI_PARAMS(ei, LogC EI, DCTLUI_COMBO_BOX, 7, {EI160, EI200, EI250, EI320, EI400, EI500, EI640, EI800, EI1000, EI1280, EI1600}, {EI 160, EI 200, EI 250, EI 320, EI 400, EI 500, EI 640, EI 800, EI 1000, EI 1280, EI 1600});
-DEFINE_UI_PARAMS(luminositylut, Film luminosity, DCTLUI_COMBO_BOX, 0, {LUMINOSITYLUT0, LUMINOSITYLUT1, LUMINOSITYLUT2, LUMINOSITYLUT3, LUMINOSITYLUT4, LUMINOSITYLUT5, LUMINOSITYLUT6}, {Fujifilm 3513DI D55, Fujifilm 3513DI D60, Fujifilm 3513DI D65, Kodak 2383 D55, Kodak 2383 D60, Kodak 2383 D65, ARRI LogC2Video});
-DEFINE_UI_PARAMS(colorlut, Film color, DCTLUI_COMBO_BOX, 0, {COLORLUT0, COLORLUT1, COLORLUT2, COLORLUT3, COLORLUT4, COLORLUT5, COLORLUT6}, {Fujifilm 3513DI D55, Fujifilm 3513DI D60, Fujifilm 3513DI D65, Kodak 2383 D55, Kodak 2383 D60, Kodak 2383 D65, ARRI LogC2Video});
+DEFINE_UI_PARAMS(lumlut, Film luminosity, DCTLUI_COMBO_BOX, 0, {LUMLUT0, LUMLUT1, LUMLUT2, LUMLUT3, LUMLUT4, LUMLUT5}, {Fujifilm 3513DI D55, Fujifilm 3513DI D60, Fujifilm 3513DI D65, Kodak 2383 D55, Kodak 2383 D60, Kodak 2383 D65});
+DEFINE_UI_PARAMS(colorlut, Film color, DCTLUI_COMBO_BOX, 0, {COLORLUT0, COLORLUT1, COLORLUT2, COLORLUT3, COLORLUT4, COLORLUT5}, {Fujifilm 3513DI D55, Fujifilm 3513DI D60, Fujifilm 3513DI D65, Kodak 2383 D55, Kodak 2383 D60, Kodak 2383 D65});
 DEFINE_UI_PARAMS(display, Display, DCTLUI_COMBO_BOX, 0, {REC709, DCIP3}, {Rec709/Gamma2.2, DCI-P3/Gamma2.6});
-DEFINE_UI_PARAMS(luminosityblend, Luminosity blend, DCTLUI_SLIDER_FLOAT, 100, 0, 100, 1);
-DEFINE_UI_PARAMS(colorblend, Color blend, DCTLUI_SLIDER_FLOAT, 100, 0, 100, 1);
+DEFINE_UI_PARAMS(lumblend, Luminosity blend %, DCTLUI_SLIDER_FLOAT, 100, 0, 100, 1);
+DEFINE_UI_PARAMS(colorblend, Color blend %, DCTLUI_SLIDER_FLOAT, 100, 0, 100, 1);
 DEFINE_UI_PARAMS(convertcineon, Convert to cineon, DCTLUI_CHECK_BOX, 1)
 DEFINE_UI_PARAMS(convertcolorspace, Convert colorspace, DCTLUI_CHECK_BOX, 1)
 DEFINE_UI_PARAMS(adjustdisplay, Adjust for display, DCTLUI_CHECK_BOX, 1)
+DEFINE_UI_PARAMS(showcurve, Show curve, DCTLUI_CHECK_BOX, 0)
 
 DEFINE_LUT(LUT0_REC709, ../Film Looks/Rec709 Fujifilm 3513DI D55.cube)
 DEFINE_LUT(LUT1_REC709, ../Film Looks/Rec709 Fujifilm 3513DI D60.cube)
@@ -20,21 +21,26 @@ DEFINE_LUT(LUT2_REC709, ../Film Looks/Rec709 Fujifilm 3513DI D65.cube)
 DEFINE_LUT(LUT3_REC709, ../Film Looks/Rec709 Kodak 2383 D55.cube)
 DEFINE_LUT(LUT4_REC709, ../Film Looks/Rec709 Kodak 2383 D60.cube)
 DEFINE_LUT(LUT5_REC709, ../Film Looks/Rec709 Kodak 2383 D65.cube)
-DEFINE_LUT(LUT6_REC709, ./ARRI_LogC2Video_709_davinci3d_33.cube)
 DEFINE_LUT(LUT0_DCIP3, ../Film Looks/DCI-P3 Fujifilm 3513DI D55.cube)
 DEFINE_LUT(LUT1_DCIP3, ../Film Looks/DCI-P3 Fujifilm 3513DI D60.cube)
 DEFINE_LUT(LUT2_DCIP3, ../Film Looks/DCI-P3 Fujifilm 3513DI D65.cube)
 DEFINE_LUT(LUT3_DCIP3, ../Film Looks/DCI-P3 Kodak 2383 D55.cube)
 DEFINE_LUT(LUT4_DCIP3, ../Film Looks/DCI-P3 Kodak 2383 D60.cube)
 DEFINE_LUT(LUT5_DCIP3, ../Film Looks/DCI-P3 Kodak 2383 D65.cube)
-DEFINE_LUT(LUT6_DCIP3, ./ARRI_LogC2Video_P3DCI_davinci3d_33.cube)
 
-// utils
 #include "PD-Common.h"
 #include "PD-LogC.h"
 #include "PD-Cineon.h"
 #include "PD-Rec709.h"
 #include "PD-DCIP3.h"
+
+__DEVICE__ float3 print(float3 rgb, float3 lumrgb, float3 colorrgb, float lumblend, float colorblend)
+{
+    float lumlut = luma_rec601(lumrgb);
+    float3 lutrgb = adjust_luma_rec601(colorrgb, lumlut);
+    float3 result = adjust_luma_rec601(mix_f3(rgb, lutrgb, colorblend / 100.0), mix_f(luma_rec601(rgb), lumlut, lumblend / 100.0));
+    return result;
+}
 
 __DEVICE__ float3 transform(int p_Width, int p_Height, int p_X, int p_Y, float p_R, float p_G, float p_B)
 {
@@ -65,56 +71,156 @@ __DEVICE__ float3 transform(int p_Width, int p_Height, int p_X, int p_Y, float p
             rgb = lin_cineon(logC4_lin(rgb));
         }
     }
-    float3 luminosity;
+    float x = float(p_X) / float(p_Width);    
+    float3 lumrgb;
+    float3 lumcurve = make_float3(x, x, x);
     if (display == REC709) {
-        switch (luminositylut) {
-            case LUMINOSITYLUT0: luminosity = APPLY_LUT(rgb.x, rgb.y, rgb.z, LUT0_REC709); break;
-            case LUMINOSITYLUT1: luminosity = APPLY_LUT(rgb.x, rgb.y, rgb.z, LUT1_REC709); break;
-            case LUMINOSITYLUT2: luminosity = APPLY_LUT(rgb.x, rgb.y, rgb.z, LUT2_REC709); break;
-            case LUMINOSITYLUT3: luminosity = APPLY_LUT(rgb.x, rgb.y, rgb.z, LUT3_REC709); break;
-            case LUMINOSITYLUT4: luminosity = APPLY_LUT(rgb.x, rgb.y, rgb.z, LUT4_REC709); break;
-            case LUMINOSITYLUT5: luminosity = APPLY_LUT(rgb.x, rgb.y, rgb.z, LUT5_REC709); break;
-            case LUMINOSITYLUT6: luminosity = APPLY_LUT(rgb.x, rgb.y, rgb.z, LUT6_REC709); break;
+        switch (lumlut) {
+            case LUMLUT0: {
+                lumrgb = APPLY_LUT(rgb.x, rgb.y, rgb.z, LUT0_REC709);
+                if (showcurve) {
+                    lumcurve = APPLY_LUT(lumcurve.x, lumcurve.y, lumcurve.z, LUT0_REC709);
+                }
+            }
+            break;
+            case LUMLUT1: {
+                lumrgb = APPLY_LUT(rgb.x, rgb.y, rgb.z, LUT1_REC709);
+                if (showcurve) {
+                    lumcurve = APPLY_LUT(lumcurve.x, lumcurve.y, lumcurve.z, LUT1_REC709);
+                }
+            }
+            break;
+            case LUMLUT2: {
+                lumrgb = APPLY_LUT(rgb.x, rgb.y, rgb.z, LUT2_REC709);
+                if (showcurve) {
+                    lumcurve = APPLY_LUT(lumcurve.x, lumcurve.y, lumcurve.z, LUT2_REC709);
+                }
+            }
+            break;
+            case LUMLUT3: {
+                lumrgb = APPLY_LUT(rgb.x, rgb.y, rgb.z, LUT3_REC709);
+                if (showcurve) {
+                    lumcurve = APPLY_LUT(lumcurve.x, lumcurve.y, lumcurve.z, LUT3_REC709);
+                }
+            }
+            break;
+            case LUMLUT4: {
+                lumrgb = APPLY_LUT(rgb.x, rgb.y, rgb.z, LUT4_REC709);
+                if (showcurve) {
+                    lumcurve = APPLY_LUT(lumcurve.x, lumcurve.y, lumcurve.z, LUT4_REC709);
+                }
+            }
+            break;
+            case LUMLUT5: {
+                lumrgb = APPLY_LUT(rgb.x, rgb.y, rgb.z, LUT5_REC709);
+                if (showcurve) {
+                    lumcurve = APPLY_LUT(lumcurve.x, lumcurve.y, lumcurve.z, LUT5_REC709);
+                }
+            }
+            break;
         }
     }
     else {
-        switch (luminositylut) {
-            case LUMINOSITYLUT0: luminosity = APPLY_LUT(rgb.x, rgb.y, rgb.z, LUT0_DCIP3); break;
-            case LUMINOSITYLUT1: luminosity = APPLY_LUT(rgb.x, rgb.y, rgb.z, LUT1_DCIP3); break;
-            case LUMINOSITYLUT2: luminosity = APPLY_LUT(rgb.x, rgb.y, rgb.z, LUT2_DCIP3); break;
-            case LUMINOSITYLUT3: luminosity = APPLY_LUT(rgb.x, rgb.y, rgb.z, LUT3_DCIP3); break;
-            case LUMINOSITYLUT4: luminosity = APPLY_LUT(rgb.x, rgb.y, rgb.z, LUT4_DCIP3); break;
-            case LUMINOSITYLUT5: luminosity = APPLY_LUT(rgb.x, rgb.y, rgb.z, LUT5_DCIP3); break;
-            case LUMINOSITYLUT6: luminosity = APPLY_LUT(rgb.x, rgb.y, rgb.z, LUT6_DCIP3); break;
+        switch (lumlut) {
+            case LUMLUT0: lumrgb = APPLY_LUT(rgb.x, rgb.y, rgb.z, LUT0_DCIP3); break;
+            case LUMLUT1: lumrgb = APPLY_LUT(rgb.x, rgb.y, rgb.z, LUT1_DCIP3); break;
+            case LUMLUT2: lumrgb = APPLY_LUT(rgb.x, rgb.y, rgb.z, LUT2_DCIP3); break;
+            case LUMLUT3: lumrgb = APPLY_LUT(rgb.x, rgb.y, rgb.z, LUT3_DCIP3); break;
+            case LUMLUT4: lumrgb = APPLY_LUT(rgb.x, rgb.y, rgb.z, LUT4_DCIP3); break;
+            case LUMLUT5: lumrgb = APPLY_LUT(rgb.x, rgb.y, rgb.z, LUT5_DCIP3); break;
         }
     }
-    float3 color;
+    float3 colorrgb;
+    float3 colorcurve = make_float3(x, x, x);
     if (display == REC709) {
         switch (colorlut) {
-            case COLORLUT0: color = APPLY_LUT(rgb.x, rgb.y, rgb.z, LUT0_REC709); break;
-            case COLORLUT1: color = APPLY_LUT(rgb.x, rgb.y, rgb.z, LUT1_REC709); break;
-            case COLORLUT2: color = APPLY_LUT(rgb.x, rgb.y, rgb.z, LUT2_REC709); break;
-            case COLORLUT3: color = APPLY_LUT(rgb.x, rgb.y, rgb.z, LUT3_REC709); break;
-            case COLORLUT4: color = APPLY_LUT(rgb.x, rgb.y, rgb.z, LUT4_REC709); break;
-            case COLORLUT5: color = APPLY_LUT(rgb.x, rgb.y, rgb.z, LUT5_REC709); break;
-            case COLORLUT6: color = APPLY_LUT(rgb.x, rgb.y, rgb.z, LUT6_REC709); break;
+            case COLORLUT0: {
+                colorrgb = APPLY_LUT(rgb.x, rgb.y, rgb.z, LUT0_REC709);
+                if (showcurve) {
+                    colorcurve = APPLY_LUT(colorcurve.x, colorcurve.y, colorcurve.z, LUT0_REC709);
+                }
+            }
+            break;
+            case COLORLUT1: {
+                colorrgb = APPLY_LUT(rgb.x, rgb.y, rgb.z, LUT1_REC709);
+                if (showcurve) {
+                    colorcurve = APPLY_LUT(colorcurve.x, colorcurve.y, colorcurve.z, LUT1_REC709);
+                }
+            }
+            break;
+            case COLORLUT2: {
+                colorrgb = APPLY_LUT(rgb.x, rgb.y, rgb.z, LUT2_REC709);
+                if (showcurve) {
+                    colorcurve = APPLY_LUT(colorcurve.x, colorcurve.y, colorcurve.z, LUT2_REC709);
+                }
+            }
+            break;  
+            case COLORLUT3: {
+                colorrgb = APPLY_LUT(rgb.x, rgb.y, rgb.z, LUT3_REC709);
+                if (showcurve) {
+                    colorcurve = APPLY_LUT(colorcurve.x, colorcurve.y, colorcurve.z, LUT3_REC709);
+                }
+            }
+            break; 
+            case COLORLUT4: {
+                colorrgb = APPLY_LUT(rgb.x, rgb.y, rgb.z, LUT4_REC709);
+                if (showcurve) {
+                    colorcurve = APPLY_LUT(colorcurve.x, colorcurve.y, colorcurve.z, LUT4_REC709);
+                }
+            }
+            break; 
+            case COLORLUT5: {
+                colorrgb = APPLY_LUT(rgb.x, rgb.y, rgb.z, LUT5_REC709);
+                if (showcurve) {
+                    colorcurve = APPLY_LUT(colorcurve.x, colorcurve.y, colorcurve.z, LUT5_REC709);
+                }
+            }
+            break; 
         }
     }
     else {
         switch (colorlut) {
-            case COLORLUT0: color = APPLY_LUT(rgb.x, rgb.y, rgb.z, LUT0_DCIP3); break;
-            case COLORLUT1: color = APPLY_LUT(rgb.x, rgb.y, rgb.z, LUT1_DCIP3); break;
-            case COLORLUT2: color = APPLY_LUT(rgb.x, rgb.y, rgb.z, LUT2_DCIP3); break;
-            case COLORLUT3: color = APPLY_LUT(rgb.x, rgb.y, rgb.z, LUT3_DCIP3); break;
-            case COLORLUT4: color = APPLY_LUT(rgb.x, rgb.y, rgb.z, LUT4_DCIP3); break;
-            case COLORLUT5: color = APPLY_LUT(rgb.x, rgb.y, rgb.z, LUT5_DCIP3); break;
-            case COLORLUT6: color = APPLY_LUT(rgb.x, rgb.y, rgb.z, LUT6_DCIP3); break;
+            case COLORLUT0: colorrgb = APPLY_LUT(rgb.x, rgb.y, rgb.z, LUT0_DCIP3); break;
+            case COLORLUT1: colorrgb = APPLY_LUT(rgb.x, rgb.y, rgb.z, LUT1_DCIP3); break;
+            case COLORLUT2: colorrgb = APPLY_LUT(rgb.x, rgb.y, rgb.z, LUT2_DCIP3); break;
+            case COLORLUT3: colorrgb = APPLY_LUT(rgb.x, rgb.y, rgb.z, LUT3_DCIP3); break;
+            case COLORLUT4: colorrgb = APPLY_LUT(rgb.x, rgb.y, rgb.z, LUT4_DCIP3); break;
+            case COLORLUT5: colorrgb = APPLY_LUT(rgb.x, rgb.y, rgb.z, LUT5_DCIP3); break;
         }
     }
-    float rgblum = luma_rec601(rgb);
-    float lutlum = luma_rec601(luminosity);
-    float3 lutrgb = adjust_luma_rec601(color, lutlum);
-    rgb = adjust_luma_rec601(mix_f3(rgb, lutrgb, colorblend / 100.0), mix_f(rgblum, lutlum, luminosityblend / 100.0));
+    rgb = print(rgb, lumrgb, colorrgb, lumblend, colorblend);
+    if (showcurve > 0) {
+        float3 curvex = make_float3(x, x, x);
+        int thickness = 4;
+        float3 color = make_float3(0.0, 0.0, 0.0);
+        float3 curvergb = print(curvex, lumcurve, colorcurve, lumblend, colorblend);
+        int row = (1.0f - curvergb.x) * p_Height;
+        if (p_Y >= row - thickness / 2 && p_Y <= row + thickness / 2) {
+            color = make_float3(1.0, 0.0, 0.0);
+        }
+        row = (1.0f - curvergb.y) * p_Height;
+        if (p_Y >= row - thickness / 2 && p_Y <= row + thickness / 2) {
+            color = make_float3(0.0, 1.0, 0.0);
+        }
+        row = (1.0f - curvergb.z) * p_Height;
+        if (p_Y >= row - thickness / 2 && p_Y <= row + thickness / 2) {
+            color = make_float3(0.0, 0.0, 1.0);
+        }
+        float l = luma_rec601(curvergb);
+        row = (1.0f - l) * p_Height;
+        thickness = 6;
+        if (p_Y >= row - thickness / 2 && p_Y <= row + thickness / 2) {
+            color = make_float3(1.0, 1.0, 1.0);
+        }
+        if (color.x > 0.0 || color.y > 0.0 || color.z > 0.0) {
+            return color;
+        }
+        else {
+            float3 fill = make_float3(0.5, 0.5, 0.5);
+            rgb = mix_f3(rgb, fill, 0.5);
+            return rgb;
+        }
+    }
     if (adjustdisplay) {
         rgb = adjust_display(rgb);
     }

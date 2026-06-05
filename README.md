@@ -4,6 +4,7 @@
 
 - [Photographic DCTLs](#photographic-dctls)
   - [Introduction](#introduction)
+    - [Change log:](#change-log)
   - [Installation and utils](#installation-and-utils)
     - [The run.py script](#the-runpy-script)
     - [Quick install for Windows users](#quick-install-for-windows-users)
@@ -33,15 +34,24 @@
   - [Projects](#projects)
   - [References](#references)
   - [Web Resources](#web-resources)
+  - [License](#license)
+    - [Code](#code)
+    - [References \& Specifications](#references--specifications)
+    - [Third-Party Resources](#third-party-resources)
+    - [Disclaimer](#disclaimer)
 
 Introduction
 ---------
 
 <img src="resources/dctl.jpg" width="100%" style="padding-bottom: 20px;" />
 
-This set of DCTL scripts is about experimenting with the math behind color science — exploring spaces like LogC, ACES AP0, Cineon, and more. These are fundamental concepts to better understand modern color pipelines such as ACES, but the approach here is intentionally creative and photography-inspired. The focus is on looks, print emulation techniques, and exploration rather than strictly technical workflows. The project is evolving, so new ideas and techniques will be added over time. Some parts overlap with Resolve’s built-in tools, and file names or structure could change as things develop.
+This set of DCTL scripts is about experimenting with the math behind color science — exploring spaces like LogC, ACES AP0, Cineon, and more. These are fundamental concepts for understanding modern color pipelines such as ACES, but the approach here is intentionally creative and photography-inspired. The focus is on looks, print emulation techniques, and exploration rather than strictly technical workflows.
 
-Change log:
+The project is continuously evolving, with new ideas and techniques being added over time. Some parts overlap with Resolve’s built-in tools, and file names, interfaces, or implementations may change as things develop.
+
+The repository also serves as a testbench for future production tools. Experimental code and work-in-progress ideas are included, so mistakes and inaccuracies may exist. While many ACES-related concepts and transforms are explored, this is not a complete implementation of the ACES framework. Components such as official RRT/ODT pipelines, ADX workflows, and other ACES infrastructure are generally outside the scope of what can be practically reproduced in DCTL. Always validate results before relying on them in production workflows.
+
+### Change log:
 
 | Date       | Description                             |
 |------------|-----------------------------------------|
@@ -299,3 +309,38 @@ References
 
 * GitHub page:        https://github.com/mikaelsundell/dctl
 * Issues              https://github.com/mikaelsundell/dctl/issues
+
+## License
+
+### Code
+
+This project's source code is licensed under the BSD 3-Clause License.
+
+### References & Specifications
+
+The project includes implementations, experiments, and interpretations based on publicly available specifications, documentation, and technical publications from various sources, including but not limited to:
+
+- ARRI LogC and ARRI Wide Gamut
+- ACES (Academy Color Encoding System)
+- Cineon
+- DaVinci Wide Gamut
+- Rec.709
+- sRGB
+- DCI-P3
+- Blackmagic Design Generation 5 Color Science
+
+All trademarks, specifications, and related intellectual property remain the property of their respective owners.
+
+### Third-Party Resources
+
+This project may use publicly available reference data, documentation, charts, or measurements for testing, validation, and educational purposes. Such materials remain the property of their respective copyright holders.
+
+Examples include:
+
+- ARRI technical documentation
+- ACES documentation and specifications
+- Manufacturer-published color science documentation
+
+### Disclaimer
+
+Users are responsible for complying with the licenses, terms, and intellectual property rights associated with any third-party specifications, documentation, datasets, or resources referenced by this project.

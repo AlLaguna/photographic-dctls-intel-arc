@@ -14,7 +14,6 @@ DEFINE_UI_PARAMS(contrast, Contrast, DCTLUI_SLIDER_FLOAT, 1.0, 0.0, 2.0, 0.01);
 DEFINE_UI_PARAMS(pivot, Pivot, DCTLUI_SLIDER_FLOAT, 0.435, 0.0, 1.0, 0.01);
 DEFINE_UI_PARAMS(showcurve, Show curve, DCTLUI_CHECK_BOX, 0)
 
-// headers
 #include "PD-Common.h"
 #include "PD-DCIP3.h"
 #include "PD-Rec709.h"
@@ -68,7 +67,7 @@ __DEVICE__ float3 transform(int p_Width, int p_Height, int p_X, int p_Y, float p
         float g = tonecurve(tc, x, low, low_g, lowsoft, high, high_g, highsoft, contrast, pivot);
         row = (1.0f - g) * p_Height;
         if (p_Y >= row - thickness / 2 && p_Y <= row + thickness / 2) {
-            color = make_float3(+.0, 1.0, 0.0);
+            color = make_float3(0.0, 1.0, 0.0);
         }
         float b = tonecurve(tc, x, low, low_b, lowsoft, high, high_b, highsoft, contrast, pivot);
         row = (1.0f - b) * p_Height;

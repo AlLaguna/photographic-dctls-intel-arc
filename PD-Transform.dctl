@@ -16,7 +16,6 @@ DEFINE_UI_PARAMS(mapcolorspace, Map colorspace, DCTLUI_CHECK_BOX, 1)
 DEFINE_UI_PARAMS(mapgamma, Map gamma, DCTLUI_CHECK_BOX, 1)
 DEFINE_UI_PARAMS(adjustdisplay, Adjust for display, DCTLUI_CHECK_BOX, 0)
 
-// headers
 #include "PD-Common.h"
 #include "PD-Aces.h"
 #include "PD-Cineon.h"
@@ -29,7 +28,6 @@ DEFINE_UI_PARAMS(adjustdisplay, Adjust for display, DCTLUI_CHECK_BOX, 0)
 #include "PD-Tonemap.h"
 #include "PD-Whitepoint.h"
 
-// transform
 __DEVICE__ float3 transform(int p_Width, int p_Height, int p_X, int p_Y, float p_R, float p_G, float p_B)
 {
     float3 rgb = make_float3(p_R, p_G, p_B);
@@ -215,7 +213,7 @@ __DEVICE__ float3 transform(int p_Width, int p_Height, int p_X, int p_Y, float p
             case OUTGAMMA26:
                 rgb = lin_dcip3gamma26(rgb);
                 break;
-            case OUTGEN5:
+            case OUTFILM5:
                 rgb = lin_gen5(rgb);
                 break;
         }

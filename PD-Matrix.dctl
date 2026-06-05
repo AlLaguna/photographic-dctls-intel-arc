@@ -13,10 +13,8 @@ DEFINE_UI_PARAMS(m7, M7, DCTLUI_VALUE_BOX, 0.0);
 DEFINE_UI_PARAMS(m8, M8, DCTLUI_VALUE_BOX, 0.0);
 DEFINE_UI_PARAMS(m9, M9, DCTLUI_VALUE_BOX, 1.0);
 
-// headers
 #include "PD-Common.h"
 
-// transform
 __DEVICE__ float3 transform(int p_Width, int p_Height, int p_X, int p_Y, float p_R, float p_G, float p_B)
 {
     float3 rgb = make_float3(p_R, p_G, p_B);
