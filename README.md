@@ -167,9 +167,13 @@ The film style matrix makes the color characteristics of the Log C image similar
 
 #### PD-Colorcube
 
-Visualize selected RGB color space as CIE XYZ or packed CIE Lab volume.
+Visualize selected RGB color space as CIE XYZ or packed CIE Lab volume. Input is decoded to linear, converted to XYZ, optionally whitepoint-adapted, and optionally packed as Lab for display/export.
 
 - https://github.com/mikaelsundell/dctl/blob/master/PD-Colorcube.dctl
+
+The included `logctool_colorcube.exr` can be used as a reference input for validating the color cube DCTL. It contains a structured RGB cube image that makes it easier to inspect color space conversion, XYZ mapping, Lab packing, gamut shape, and clipping behavior.
+
+- Download: [logctool_colorcube.exr](resources/logctool_colorcube.exr)
 
 #### PD-Colorwarp
 
@@ -179,7 +183,7 @@ Procedural RGB color cube warp using tetrahedral interpolation.
 
 #### PD-GamutCompress
 
-// Luma-axis gamut compression with selectable color space coefficients.
+Luma-axis gamut compression with selectable color space coefficients.
 
 - https://github.com/mikaelsundell/dctl/blob/master/PD-GamutCompress.dctl
 
@@ -197,7 +201,7 @@ Matrix adjustments, a utility for copying matrix values.
 
 #### PD-Saturation
 
-// Luma-axis saturation test with selectable color space coefficients.
+Luma-axis saturation test with selectable color space coefficients.
 
 - https://github.com/mikaelsundell/dctl/blob/master/PD-Saturation.dctl
 
@@ -284,6 +288,10 @@ Reference charts for testing and verifying DCTLs. Additional formats are availab
 ![llogctool_LogC3_stepchart_DCI_2K figure](resources/logctool_LogC3_stepchart_DCI_2K.png "ARRI LogC3 10-bit DPX")
 
 - Download: [logctool_LogC3_stepchart_DCI_2K.exr](https://mikaelsundell.s3.eu-west-1.amazonaws.com/github/logctool/logctool_LogC3_stepchart_DCI_2K.exr)
+
+More examples, stepcharts, and test charts are available in the separate **logctool** repository:
+
+- [github.com/mikaelsundell/logctool](https://github.com/mikaelsundell/logctool)
 
 #### LogC3 colorchecker - EXR 2K LogC3 encoding 
 

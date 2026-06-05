@@ -3,6 +3,8 @@
 // https://github.com/mikaelsundell/photographic-dctls
 
 // Visualize selected RGB color space as CIE XYZ or packed CIE Lab volume.
+// Input is decoded to linear, converted to XYZ, optionally whitepoint-adapted,
+// and optionally packed as Lab for display/export.
 
 // clang-format off
 DEFINE_UI_PARAMS(colorspace, Colorspace, DCTLUI_COMBO_BOX, 6, {XYZ, ACESAP0, ACESAP1, AWGC3, AWGC4, DWG, REC709, SRGB, DCIP3D60, DCIP3, DCIP3D65, GEN5}, {CIE XYZ, AcesAP0 D60, AcesAP1 D60, ARRI AWG3 D65, ARRI AWG4 D65, DaVinci Wide Gamut D65, Rec709 D65, sRGB D65, DCI-P3 'D60 sim' D60, DCI-P3 Theatrical D63, DCI-P3 D65, Blackmagic Gen5 D65})
@@ -14,6 +16,7 @@ DEFINE_UI_PARAMS(adjustdisplay, Adjust for display, DCTLUI_CHECK_BOX, 0)
 
 // clang-format on
 #include "PD-Common.h"
+#include "PD-CIEXYZ.h"
 #include "PD-Aces.h"
 #include "PD-Cineon.h"
 #include "PD-DWG.h"
@@ -32,40 +35,9 @@ struct ColorVolumeParams
     int ei;
 };
 
-__DEVICE__ float lab_f(float t)
+__DEVICE__ float3 gamma_to_lin(float3 rgb, struct ColorVolumeParams params)
 {
-    const float epsilon = 216.0f / 24389.0f;
-    const float kappa = 24389.0f / 27.0f;
-    return t > epsilon ? pow_f(t, 1.0f / 3.0f) : (kappa * t + 16.0f) / 116.0f;
-}
-
-__DEVICE__ float3 xyz_lab_d65(float3 xyz)
-{
-    const float Xn = 0.95047f;
-    const float Yn = 1.00000f;
-    const float Zn = 1.08883f;
-
-    float fx = lab_f(xyz.x / Xn);
-    float fy = lab_f(xyz.y / Yn);
-    float fz = lab_f(xyz.z / Zn);
-
-    return make_float3(
-        116.0f * fy - 16.0f,
-        500.0f * (fx - fy),
-        200.0f * (fy - fz));
-}
-
-__DEVICE__ float3 pack_lab_to_rgb(float3 lab)
-{
-    return make_float3(
-        lab.x / 100.0f,
-        (lab.y + 128.0f) / 255.0f,
-        (lab.z + 128.0f) / 255.0f);
-}
-
-__DEVICE__ float3 input_gamma_to_linear(float3 rgb, struct ColorVolumeParams params)
-{
-    switch (params.inputgamma) {
+    switch (params.gamma) {
         case ACESCC:
             rgb = acescc_lin(rgb);
             break;
@@ -97,13 +69,12 @@ __DEVICE__ float3 input_gamma_to_linear(float3 rgb, struct ColorVolumeParams par
             rgb = gen5_lin(rgb);
             break;
     }
-
     return rgb;
 }
 
-__DEVICE__ float3 input_colorspace_to_xyz(float3 rgb, struct ColorVolumeParams params)
+__DEVICE__ float3 colorspace_to_xyz(float3 rgb, struct ColorVolumeParams params)
 {
-    switch (params.inputcolorspace) {
+    switch (params.colorspace) {
         case ACESAP0:
             rgb = acesAP0_xyz(rgb);
             break;
@@ -138,7 +109,6 @@ __DEVICE__ float3 input_colorspace_to_xyz(float3 rgb, struct ColorVolumeParams p
             rgb = gen5_xyz(rgb);
             break;
     }
-
     return rgb;
 }
 
@@ -158,7 +128,6 @@ __DEVICE__ float3 adapt_whitepoint(float3 xyz, struct ColorVolumeParams params)
             xyz = d65_d63_adaptation(xyz);
             break;
     }
-
     return xyz;
 }
 

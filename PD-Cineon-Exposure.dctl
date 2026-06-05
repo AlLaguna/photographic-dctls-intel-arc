@@ -15,6 +15,12 @@ DEFINE_UI_PARAMS(showlegend, Show legend, DCTLUI_CHECK_BOX, 0)
 #include "PD-Common.h"
 #include "PD-Cineon.h"
 
+struct CineonExposureParams
+{
+    float exposure;
+    int ev;
+};
+
 // ev stops
 __DEVICE__ float evstops(int ev) {
     if (ev == EV_3) {
@@ -36,9 +42,9 @@ __DEVICE__ float evstops(int ev) {
 }
 
 // cineon color
-__DEVICE__ float3 cineon_color(float3 input_rgb, int ev) {
+__DEVICE__ float3 cineon_color(float3 input_rgb, struct CineonExposureParams params) {
     struct CineonCurve cv = cineon_curve();
-    float evs = evstops(ev);
+    float evs = evstops(params.ev);
     struct CineonColor colors[cineon_stops];
     for (unsigned long i = 0; i < cineon_stops; i++) {
         colors[i] = cineon_colors[i];
@@ -61,9 +67,14 @@ __DEVICE__ float3 cineon_color(float3 input_rgb, int ev) {
 __DEVICE__ float3 transform(int p_Width, int p_Height, int p_X, int p_Y, float p_R, float p_G, float p_B)
 {
     float3 rgb = make_float3(p_R, p_G, p_B);
-    rgb = max_f3(lin_cineon(cineon_lin(rgb) * pow_f(2.0f, exposure)), 0.0f);
+
+    struct CineonExposureParams params;
+    params.exposure = exposure;
+    params.ev = ev;
+
+    rgb = max_f3(lin_cineon(cineon_lin(rgb) * pow_f(2.0f, params.exposure)), 0.0f);
     if (showcolors > 0) {
-        rgb = cineon_color(rgb, ev);
+        rgb = cineon_color(rgb, params);
     }
     if (showlegend > 0) {
         int legendwidth = p_Width * 0.8;
