@@ -35,29 +35,29 @@ __DEVICE__ float smooth01(float x)
 __DEVICE__ float3 gamut_luma_coeff(struct GamutCompressParams params)
 {
     switch (params.colorspace) {
-        case INXYZ:
+        case XYZ:
             return make_float3(0.0f, 1.0f, 0.0f);
-        case INACESAP0:
+        case ACESAP0:
             return acesAP0_y_lum_coeff();
-        case INACESAP1:
+        case ACESAP1:
             return acesAP1_y_lum_coeff();
-        case INAWGC3:
+        case AWGC3:
             return logc3_y_lum_coeff();
-        case INAWGC4:
+        case AWGC4:
             return logc4_y_lum_coeff();
-        case INDWG:
+        case DWG:
             return dwg_y_lum_coeff();
-        case INREC709:
+        case REC709:
             return rec709_y_lum_coeff();
-        case INSRGB:
+        case SRGB:
             return sRGB_y_lum_coeff();
-        case INDCIP3D60:
+        case DCIP3D60:
             return dcip3d60_y_lum_coeff();
-        case INDCIP3:
+        case DCIP3:
             return dcip3_y_lum_coeff();
-        case INDCIP3D65:
+        case DCIP3D65:
             return dcip3d65_y_lum_coeff();
-        case INGEN5:
+        case GEN5:
             return gen5_y_lum_coeff();
     }
 
